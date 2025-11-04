@@ -1,0 +1,31 @@
+* { margin:0; padding:0; box-sizing:border-box; font-family:Arial; }
+body { background:linear-gradient(135deg,#667eea,#764ba2); min-height:100vh; display:flex; justify-content:center; align-items:center; }
+.login-box { background:white; padding:35px; border-radius:15px; width:360px; text-align:center; box-shadow:0 15px 35px rgba(0,0,0,0.1); }
+input, button { width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px; font-size:16px; }
+button { background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold; }
+button:hover { background:#0056b3; }
+.error { color:red; margin-top:10px; }
+
+.dashboard { max-width:900px; margin:30px auto; padding:20px; color:white; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.header button { padding:10px 20px; border:none; border-radius:8px; cursor:pointer; }
+#newTaskBtn { background:#007bff; color:white; }
+#logoutBtn { background:#dc3545; color:white; }
+
+.tabs button { background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3); padding:8px 16px; margin:0 5px; border-radius:8px; cursor:pointer; }
+.tabs button.active { background:white; color:#667eea; font-weight:bold; }
+
+.task-card { background:white; color:#333; padding:18px; margin:12px 0; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 3px 10px rgba(0,0,0,0.1); }
+.task-card button { background:#28a745; color:white; padding:8px 16px; border:none; border-radius:8px; cursor:pointer; }
+
+.modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000; }
+.modal-content { background:white; padding:30px; border-radius:15px; width:420px; color:#333; }
+.close { float:right; font-size:28px; cursor:pointer; color:#aaa; }
+.close:hover { color:#000; }
+
+input, textarea, select { width:100%; padding:10px; margin:8px 0; border:1px solid #ddd; border-radius:8px; }
+#createBtn { background:#28a745; color:white; }
+
+.status { padding:4px 10px; border-radius:20px; font-size:12px; color:white; }
+.status.pending { background:#ffc107; }
+.status.completed { background:#28a745; }

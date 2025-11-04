@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "user1",
+      "password": "123",
+      "name": "Aman"
+    },
+    {
+      "id": "2",
+      "username": "user2",
+      "password": "123",
+      "name": "Priya"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "afb7",
+      "title": "notebook",
+      "description": "checking",
+      "assignedTo": 1,
+      "status": "pending",
+      "dueDate": "2025-11-28",
+      "createdBy": "1"
+    },
+    {
+      "id": "92b5",
+      "title": "paper making",
+      "description": "test paper",
+      "assignedTo": 1,
+      "status": "pending",
+      "dueDate": "2025-11-28",
+      "createdBy": "1"
+    }
+  ]
+}

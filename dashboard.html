@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - TaskFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h2>Welcome, <span id="userName"></span>!</h2>
+      <div>
+        <button id="newTaskBtn">+ New Task</button>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="my">My Tasks</button>
+      <button data-filter="pending">Pending</button>
+      <button data-filter="completed">Completed</button>
+    </div>
+
+    <div id="taskList"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <h3>Create New Task</h3>
+      <input id="title" placeholder="Task Title">
+      <textarea id="desc" placeholder="Description (optional)"></textarea>
+      <select id="assignTo"><option value="">Assign To</option></select>
+      <input type="date" id="dueDate">
+      <button id="createBtn">Create Task</button>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://localhost:3000";
+    let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    let allTasks = [];
+    let allUsers = [];
+    let currentFilter = 'all';
+
+    // Check login
+    if (!currentUser.id) {
+      location = 'login.html';
+    } else {
+      init();
+    }
+
+    async function init() {
+      document.getElementById('userName').textContent = currentUser.name;
+      await loadUsers();
+      await loadTasks();
+      setInterval(loadTasks, 3000); // Real-time
+      setupEvents();
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(API + '/users');
+        allUsers = await res.json();
+      } catch (e) { console.error('Users load failed'); }
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(API + '/tasks');
+        allTasks = await res.json();
+        renderTasks();
+      } catch (e) { console.error('Tasks load failed'); }
+    }
+
+    function renderTasks() {
+      let tasks = allTasks;
+      if (currentFilter === 'my') tasks = tasks.filter(t => t.assignedTo == currentUser.id);
+      if (currentFilter === 'pending') tasks = tasks.filter(t => t.status === 'pending');
+      if (currentFilter === 'completed') tasks = tasks.filter(t => t.status === 'completed');
+
+      const container = document.getElementById('taskList');
+      if (!tasks.length) {
+        container.innerHTML = '<p style="text-align:center; color:white; opacity:0.8;">No tasks found</p>';
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => {
+        const assignee = allUsers.find(u => u.id == task.assignedTo)?.name || 'Unknown';
+        const canComplete = task.assignedTo == currentUser.id && task.status === 'pending';
+        return `
+          <div class="task-card">
+            <div>
+              <strong>${task.title}</strong><br>
+              <small>${task.description || 'No description'}</small><br>
+              <small>Assigned to: <strong>${assignee}</strong> | Due: <strong>${task.dueDate}</strong></small><br>
+              <span class="status ${task.status}">${task.status.toUpperCase()}</span>
+            </div>
+            <div>
+              ${canComplete ? `<button onclick="completeTask(${task.id})">Complete</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function completeTask(id) {
+      await fetch(API + '/tasks/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      });
+      loadTasks();
+    }
+
+    function setupEvents() {
+      const modal = document.getElementById('modal');
+      const openBtn = document.getElementById('newTaskBtn');
+      const closeBtn = document.querySelector('.close');
+      const createBtn = document.getElementById('createBtn');
+
+      openBtn.onclick = () => {
+        modal.style.display = 'flex';
+        const select = document.getElementById('assignTo');
+        select.innerHTML = '<option value="">Assign To</option>';
+        allUsers.forEach(u => {
+          select.innerHTML += `<option value="${u.id}">${u.name}</option>`;
+        });
+      };
+
+      closeBtn.onclick = () => modal.style.display = 'none';
+      window.onclick = e => { if (e.target == modal) modal.style.display = 'none'; };
+
+      createBtn.onclick = async () => {
+        const title = document.getElementById('title').value.trim();
+        const desc = document.getElementById('desc').value.trim();
+        const assignTo = document.getElementById('assignTo').value;
+        const dueDate = document.getElementById('dueDate').value;
+
+        if (!title || !assignTo || !dueDate) {
+          alert('Title, Assign To, and Due Date are required!');
+          return;
+        }
+
+        await fetch(API + '/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title, description: desc, assignedTo: +assignTo,
+            status: 'pending', dueDate, createdBy: currentUser.id
+          })
+        });
+
+        modal.style.display = 'none';
+        document.getElementById('title').value = '';
+        document.getElementById('desc').value = '';
+        document.getElementById('assignTo').value = '';
+        document.getElementById('dueDate').value = '';
+        loadTasks();
+      };
+
+      document.getElementById('logoutBtn').onclick = () => {
+        localStorage.removeItem('user');
+        location = 'login.html';
+      };
+
+      document.querySelectorAll('.tabs button').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          renderTasks();
+        };
+      });
+    }
+  </script>
+</body>
+</html>
